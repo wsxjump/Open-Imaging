@@ -59,7 +59,7 @@ public class GifDecoderTest {
 				new TestImage("train", 240, 166, 175),
 				new TestImage("bubble", 395, 256, 255),
 				new TestImage("space", 1157, 663, 28) };
-		SINGLE = new TestImage("hand", 400, 400, 49);
+		SINGLE = new TestImage("eatbook", 240, 240, 13);
 	}
 
 	@Test

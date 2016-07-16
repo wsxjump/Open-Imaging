@@ -173,6 +173,10 @@ public final class GifDecoder {
 		private BufferedImage prevImg = null; // Last drawn frame
 		private int prevIndex; // Index of the last drawn frame
 		private int prevDisposal; // Disposal of the previous frame
+		private int previmgwidth;//The real width of the previous frame
+		private int previmgheight;//The real height of the previous frame
+		private int previmgleft;//The left position of the previous frame
+		private int previmgtop;//The top position of the previous frame
 		private final BitReader in = new BitReader();
 		private final CodeTable codes = new CodeTable();
 		public int[] pxBuffer;
@@ -271,7 +275,15 @@ public final class GifDecoder {
 			case 2: // Next frame draws on background canvas
 				final BufferedImage bgImage = prevImg;
 				final int[] px = getPixels(bgImage);
-				Arrays.fill(px, bgCol); // Set background color of bgImage
+				//fill the prev frame area with background color,
+				//NOT to fill the whole image or will cause bug 
+				//when prev frame smaller than the whole image.
+				final int bgimgwidth = bgImage.getWidth();
+				int startpxindex=(previmgtop-1)*bgimgwidth+previmgleft;//minus 1 so that we can use "+=" in the loop
+				for(int fillindex=0;fillindex<previmgheight;fillindex++){
+					startpxindex+=bgimgwidth;
+					Arrays.fill(px,startpxindex,startpxindex+previmgwidth,bgCol);
+				}
 				prevImg = img; // Let previous point to current, dispose current
 				img = bgImage; // Let current point to background image
 				break;
@@ -348,6 +360,10 @@ public final class GifDecoder {
 				prevImg = new BufferedImage(width, height, 2);
 				prevIndex = -1;
 				prevDisposal = 2;
+				previmgheight = height;
+				previmgwidth = width ;
+				previmgleft = 0;
+				previmgtop = 0;
 			}
 			// Draw current frame on top of previous frames
 			for (int i = prevIndex + 1; i <= index; i++) {
@@ -355,6 +371,10 @@ public final class GifDecoder {
 				drawFrame(fr);
 				prevIndex = i;
 				prevDisposal = fr.disposalMethod;
+				previmgheight = fr.height;
+				previmgwidth = fr.width ;
+				previmgleft = fr.left;
+				previmgtop = fr.top;
 			}
 			return img;
 		}
